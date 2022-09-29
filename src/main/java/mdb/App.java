@@ -27,6 +27,7 @@ public class App {
                     //Commit 30 writes at a time
                     if ((transCount++) % 30 == 0)
                         con.commit();
+                        
                     rs.close();
                     Thread.sleep(50);
                 } catch (Exception e) {
