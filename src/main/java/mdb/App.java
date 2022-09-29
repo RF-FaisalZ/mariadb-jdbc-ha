@@ -1,15 +1,10 @@
 package mdb;
 
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
-
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-@ApplicationPath("app")
-public class App extends Application {
+public class App {
     public static java.sql.Connection con;
     public static void main(String[] args) {
         String sqlRead, sqlWrite;
@@ -28,12 +23,9 @@ public class App extends Application {
                     rs = stmt.executeQuery(sqlRead);
                     if (rs.next()) 
                         System.out.println(transCount + ": Record found for " + rs.getString("c") + " on host " + rs.getString("hostName"));
-                    else 
-                        System.out.println("Record NOT found!");
                     
-                    transCount++;
-                    //Commit 256 transaction at a time
-                    if ((transCount % 10) == 0)
+                    //Commit 30 writes at a time
+                    if ((transCount++) % 30 == 0)
                         con.commit();
                     rs.close();
                     Thread.sleep(50);
@@ -58,6 +50,7 @@ public class App extends Application {
             "app_user", "P@ssw0rd"
         );
     }
+
     public static void disconnectFromDatabase() throws SQLException {
         if (con != null)
             con.close();
