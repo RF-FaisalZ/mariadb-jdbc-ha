@@ -17,21 +17,30 @@ public class App extends Application {
         sqlRead = "SELECT @@hostname as hostName, c FROM products WHERE id = LAST_INSERT_ID()";
         try {
             connectToDatabase();
+            con.setAutoCommit(false);
+            con.setTransactionIsolation(1);
             Statement stmt = con.createStatement();
             ResultSet rs;
-            System.out.println("Success!");
+            int transCount=0;
             while (true) {
-                con.setTransactionIsolation(1);
-                stmt.executeQuery(sqlWrite);
-                rs = stmt.executeQuery(sqlRead);
-                if (rs.next()) {
-                    System.out.println("Record found for " + rs.getString("c") + " on host " + rs.getString("hostName"));
-                } else {
-                    System.out.println("Record NOT found!");
+                try {
+                    stmt.executeQuery(sqlWrite);
+                    rs = stmt.executeQuery(sqlRead);
+                    if (rs.next()) 
+                        System.out.println(transCount + ": Record found for " + rs.getString("c") + " on host " + rs.getString("hostName"));
+                    else 
+                        System.out.println("Record NOT found!");
+                    
+                    transCount++;
+                    //Commit 256 transaction at a time
+                    if ((transCount % 10) == 0)
+                        con.commit();
+                    rs.close();
+                    Thread.sleep(50);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    con.rollback();
                 }
-                con.commit();
-                rs.close();
-                Thread.sleep(50);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -45,10 +54,9 @@ public class App extends Application {
     }
     public static void connectToDatabase() throws SQLException {
         con = DriverManager.getConnection(
-            "jdbc:mariadb:loadbalance://localhost:4601,localhost:4602/securedb",    
+            "jdbc:mariadb:sequential://localhost:4601,localhost:4602/securedb?transactionReplay&transactionReplaySize=1000",    
             "app_user", "P@ssw0rd"
         );
-        con.setAutoCommit(false);
     }
     public static void disconnectFromDatabase() throws SQLException {
         if (con != null)
