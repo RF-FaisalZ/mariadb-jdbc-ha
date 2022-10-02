@@ -4,12 +4,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-public class App  extends Thread {
+public class App extends Thread {
     public static String sqlRead, sqlWrite;
     public static void main(String[] args) {
-        for (int x=0; x<500;';' x++) {
-            App thread1=new App();
-            thread1.start();
+        for (int x = 0; x < 500; x++) {
+            new App().start();
         }
     }
     
