@@ -4,20 +4,13 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-public class App extends Thread {
+public class App {
     public static String sqlRead, sqlWrite;
     public static void main(String[] args) {
-        for (int x = 0; x < 500; x++) {
-            new App().start();
-        }
+        executeBatches();
     }
-    
-    public void run()  
-    {    
-        excuteSingleInserts();  
-    }    
-    
-    public void excuteSingleInserts() {
+                  
+    public static void excuteSingleInserts() {
         sqlWrite = "INSERT INTO products(c) VALUES(CONCAT('Data - ', ROUND(RAND()*10000000,0)))";
         sqlRead = "SELECT @@hostname as hostName, c FROM products WHERE id = LAST_INSERT_ID()";
         Connection con;
@@ -27,16 +20,16 @@ public class App extends Thread {
             con.setTransactionIsolation(1);
             Statement stmt = con.createStatement();
             ResultSet rs;
-            int transCount = 0;
+            //int transCount = 0;
             while (true) {
                 try {
                     stmt.executeQuery(sqlWrite);
                     rs = stmt.executeQuery(sqlRead);
-                    transCount++;
+                    //transCount++;
                     if (rs.next()) 
-                        System.out.println(transCount + ": Record found for " + rs.getString("c") + " on host " + rs.getString("hostName"));
+                        //System.out.println(transCount + ": Record found for " + rs.getString("c") + " on host " + rs.getString("hostName"));
                     
-                    con.commit();                        
+                    con.commit();
                     rs.close();
                     Thread.sleep(100);
                 } catch (Exception e) {
@@ -50,7 +43,7 @@ public class App extends Thread {
         disconnectFromDatabase(con);
     }
 
-    public void executeBatches() {
+    public static void executeBatches() {
         sqlWrite = "INSERT INTO products(c) VALUES(CONCAT('Data - ', ROUND(RAND()*10000000,0)))";
         sqlRead = "SELECT @@hostname as hostName, c FROM products WHERE id = LAST_INSERT_ID()";
         Connection con;
@@ -85,11 +78,12 @@ public class App extends Thread {
         disconnectFromDatabase(con);
     }
     
-    public Connection connectToDatabase() {
+    public static Connection connectToDatabase() {
         Connection con;
         try {
+            //
             con = DriverManager.getConnection(
-                "jdbc:mariadb:sequential://localhost:4601,localhost:4602/securedb?transactionReplay&transactionReplaySize=1000",    
+                "jdbc:mariadb:sequential//localhost:4601,localhost:4602/securedb?transactionReplay&transactionReplaySize=1000&socketTimeout=65535",    
                 "app_user", "P@ssw0rd"
             );
             return con;           
@@ -99,7 +93,7 @@ public class App extends Thread {
         }
     }
 
-    public void disconnectFromDatabase(Connection con) {
+    public static void disconnectFromDatabase(Connection con) {
         if (con != null)
             try {
                 con.close();
