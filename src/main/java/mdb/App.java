@@ -44,8 +44,8 @@ public class App {
     }
 
     public static void executeBatches() {
-        sqlWrite = "INSERT INTO products(c) VALUES(CONCAT('Data - ', ROUND(RAND()*10000000,0)))";
-        sqlRead = "SELECT @@hostname as hostName, c FROM products WHERE id = LAST_INSERT_ID()";
+        sqlWrite = "INSERT INTO big_table(c) VALUES(CONCAT('Data - ', ROUND(RAND()*10000000,0)))";
+        sqlRead = "SELECT @@hostname as hostName, c FROM big_table WHERE id = LAST_INSERT_ID()";
         Connection con;
         con = connectToDatabase();
         try {
@@ -59,7 +59,7 @@ public class App {
                     stmt.executeQuery(sqlWrite);
                     rs = stmt.executeQuery(sqlRead);
                     if (rs.next()) 
-                        System.out.println(transCount + ": Record found for " + rs.getString("c") + " on host " + rs.getString("hostName"));
+                        System.out.println(transCount + ": Record found for \"" + rs.getString("c") + "\" on host " + rs.getString("hostName"));
                     
                     //Commit 30 writes at a time
                     if ((transCount++) % 30 == 0)
@@ -83,7 +83,7 @@ public class App {
         try {
             //
             con = DriverManager.getConnection(
-                "jdbc:mariadb:sequential//localhost:4601,localhost:4602/securedb?transactionReplay&transactionReplaySize=1000&socketTimeout=65535",    
+                "jdbc:mariadb:loadbalance//localhost:4601,localhost:4602/securedb?transactionReplay&transactionReplaySize=1000&socketTimeout=65535",    
                 "app_user", "P@ssw0rd"
             );
             return con;           
